@@ -18,8 +18,11 @@ void mostrarPantallaEstado(int puntaje[2],int cantDadosD6[2], int ronda, string 
 void limpiarPantalla();
 void mostrarPantallaTirosDadosD12(int dadosD12[2]);
 void calcularPuntajeYDados(int sumaSeleccionada, int dadosD12[2], int &puntaje, int cantDadosJugados,int &cantDadosD6Oponente, int &cantDadosD6Jugador,string posicion);
-
-
+void imprimirDadoD6(int valor);
+void imprimirDadoD12(int valor);
+void modificarEstadistica(int puntaje, string posicion, int &mejorPuntuacion, string &mejorJugador);
+void mostrarMejorPuntaje(int mejorPuntuacion, string mejorJugador);
+void confirmarGanador(int puntaje[2], string posicion[2], int mejorPuntuacion, string mejorJugador);
 
 
 int main() {
@@ -113,14 +116,9 @@ void juego() {
     string posicion[2];
     int dadosD12[2];
     int dadosStock[11];
-    int cantDadosD6[2] = {6,6};
-    int ronda = 1;
     int puntaje[2];
-
-    int sumaSeleccionada = 0;
-    int cantDadosJugados = 0;
-
-
+    int mejorPuntuacion = 0;
+    string mejorJugador = "NULL";
 
     int opcion;
 
@@ -128,10 +126,17 @@ void juego() {
         titulo();
         cin >> opcion;
 
+        //Es un switch para cada opcion del juego. Las llaves {} en el case 1 son para poder inicializar variables dentro
         switch (opcion){
-            case 1:
+            case 1: {
                 puntaje[0] = 0;
                 puntaje[1] = 0;
+                int cantDadosD6[2] = {6,6};
+                int sumaSeleccionada = 0;
+                int cantDadosJugados = 0;
+                int ronda = 1;
+                int oponente;
+
                 instruccionesIniciales();
                 ingresarNombresJugadores(nombreJ1,nombreJ2);
                 tiradaInicial(numIniJ1,numIniJ2,posicion,nombreJ1,nombreJ2);
@@ -140,58 +145,50 @@ void juego() {
                 //este do while lo que hace es que, mientras la condicion de que la ronda sea menor o igual a 3, va a realizar todas las acciones
                 //en caso de que un jugador se quede sin dados se corta directamente
                 do {
-                    mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[0], posicion);
-                    tirarD12(dadosD12);
-                    limpiarPantalla();
+                    //Aca se utiliza un for ya que todas las llamadas a las funciones se repiten, solo varia los datos de el jugador 1 o 2
+                    for (int i = 0; i <= 1; i++) {
+                        mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[i], posicion);
+                        tirarD12(dadosD12);
+                        limpiarPantalla();
 
-                    mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[0], posicion);
-                    mostrarPantallaTirosDadosD12(dadosD12);
-                    tiradaD6(dadosStock,cantDadosD6[0]);
+                        mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[i], posicion);
+                        mostrarPantallaTirosDadosD12(dadosD12);
+                        tiradaD6(dadosStock,cantDadosD6[i]);
 
-                    cout << "Ahora " << posicion[0] << " te toca seleccionar los dados que, sumados, coincidan con la SUMA OBJETIVO" << endl;
-                    cout << "Ingresa 0 si la suma de los dados no llega a la SUMA OBJETIVO" << endl;
+                        cout << "Ahora " << posicion[i] << " te toca seleccionar los dados que, sumados, coincidan con la SUMA OBJETIVO" << endl;
+                        cout << "Ingresa 0 si la suma de los dados no llega a la SUMA OBJETIVO" << endl;
 
-                    seleccionDado(cantDadosD6[0],dadosStock,sumaSeleccionada,cantDadosJugados,dadosD12);
+                        seleccionDado(cantDadosD6[i],dadosStock,sumaSeleccionada,cantDadosJugados,dadosD12);
 
-                    calcularPuntajeYDados(sumaSeleccionada, dadosD12, puntaje[0], cantDadosJugados,cantDadosD6[1], cantDadosD6[0],posicion[0]);
+                        //Este if es para solucionar la funcion calcularPuntajeYDados, como se tiene que enviar tanto la cantidad de
+                        //dados stock del jugador y del oponente, el for no puede solucionar eso. Este auxiliar
+                        //permite que se pueda, en base a la posicion de i, seleccionar el jugador opuesto
+                        oponente = 0;
+                        if (i == 0) {
+                            oponente = 1;
+                        }
 
-                    if (puntaje[0] >= 10000) {
-                        break;
+                        calcularPuntajeYDados(sumaSeleccionada, dadosD12, puntaje[i], cantDadosJugados,cantDadosD6[oponente], cantDadosD6[i],posicion[i]);
+
+                        //verifica si alguno de los jugadores obtuvo el puntaje ganador al quedar sin dados
+                        //de ser asi setea la ronda en 4 para cortar el do while y hace un break para cortar el for
+                        if (puntaje[i] >= 10000) {
+                            ronda = 4;
+                            break;
+                        }
                     }
 
-                    mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[1], posicion);
-                    tirarD12(dadosD12);
-                    limpiarPantalla();
-
-                    mostrarPantallaEstado(puntaje,cantDadosD6, ronda, posicion[1], posicion);
-                    mostrarPantallaTirosDadosD12(dadosD12);
-                    tiradaD6(dadosStock,cantDadosD6[1]);
-
-                    cout << "Ahora " << posicion[1] << " te toca seleccionar los dados que, sumados, coincidan con la SUMA OBJETIVO" << endl;
-                    cout << "Ingresa 0 si la suma de los dados no llega a la SUMA OBJETIVO" << endl;
-
-                    seleccionDado(cantDadosD6[1],dadosStock,sumaSeleccionada,cantDadosJugados,dadosD12);
-
-                    calcularPuntajeYDados(sumaSeleccionada, dadosD12, puntaje[1], cantDadosJugados,cantDadosD6[0], cantDadosD6[1],posicion[1]);
-
-                    if (puntaje[1] >= 10000) {
-                        break;
-                    }
                     ronda++;
                 }while (ronda <=3);
 
-                if (puntaje[0] > puntaje[1]) {
-                    cout << "Ganaste " << posicion[0] << " con " << puntaje[0] << " puntos." << endl;
-                } else if (puntaje[0] < puntaje[1]) {
-                    cout << "Ganaste " << posicion[1] << " con " << puntaje[1] << " puntos." << endl;
-                } else {
-                    cout << "Empataron, todo mal :(" << endl;
-                }
+                confirmarGanador(puntaje, posicion, mejorPuntuacion, mejorJugador);
 
                 break;
+            }
             case 2:
                 cout << endl;
-                cout << "Ud eligio Estadisticas" << endl;
+                mostrarMejorPuntaje(mejorPuntuacion, mejorJugador);
+                limpiarPantalla();
                 break;
             case 3:
                 cout << endl;
@@ -235,7 +232,11 @@ void tiradaInicial(int numIniJ1, int numIniJ2,string posicion[2],string nombreJ1
     }
 
     cout << nombreJ1 <<" obtuvo: "<< numIniJ1 << endl;
+    imprimirDadoD6(numIniJ1);
+    cout << endl;
     cout << nombreJ2 <<" obtuvo: "<< numIniJ2 << endl;
+    imprimirDadoD6(numIniJ2);
+    cout << endl;
     cout << posicion[0] << " arranca el juego " << endl;
 }
 
@@ -258,7 +259,8 @@ void mostrarPantallaTirosDadosD12(int dadosD12[2]) {
     cout << "" << endl;
     cout << "                        Dado D12      Dado D12                " << endl;
     cout << "                          [" << dadosD12[0] << "]            [" << dadosD12[1] << "]            " << endl;
-    cout << "                      La suma objetivo es:" << (dadosD12[0] + dadosD12[1]) <<"             "<<endl;
+    cout << "" << endl;
+    cout << "                        La suma objetivo es: " << (dadosD12[0] + dadosD12[1]) <<"             "<<endl;
     cout << "+--------------------------------------------------------------+" << endl;
 }
 
@@ -266,8 +268,12 @@ void  tirarD12(int dadosD12[2]) {
     //Se tiran los dados de 12 caras y se muestra por pantalla cuales son
     dadosD12[0] = rand()%12+1;
     dadosD12[1] = rand()%12+1;
-    cout << "tu primer dado es: "<< dadosD12[0] <<endl;
-    cout << "y el segundo dado es: "<< dadosD12[1] <<endl;
+    cout << "tu primer dado es: " << dadosD12[0] << endl;
+    imprimirDadoD12(dadosD12[0]);
+    cout << endl;
+    cout << "y el segundo dado es: "<< dadosD12[1] << endl;
+    imprimirDadoD12(dadosD12[1]);
+    cout << endl;
     cout << "+--------------------------------------------------------------+" << endl;
 }
 
@@ -278,8 +284,11 @@ void tiradaD6(int dadosStock[11],int cantDadosD6) {
     for (i=0;i<cantDadosD6;i++) {
         dadosStock[i]= rand()%6+1;
     }
-    for (i=0;i<cantDadosD6;i++) {
-        cout << "Dado " << (i+1) << ":  " << dadosStock[i] << endl;
+    for (i = 0; i < cantDadosD6; i++) {
+        cout << "Dado " << (i + 1) << ":" << endl;
+        imprimirDadoD6(dadosStock[i]);
+        cout << "    " << dadosStock[i] << endl;
+        cout << endl;
     }
     cout << "+--------------------------------------------------------------+" << endl;
 }
@@ -365,4 +374,173 @@ void calcularPuntajeYDados(int sumaSeleccionada, int dadosD12[2], int &puntaje, 
     }
 }
 
+void confirmarGanador(int puntaje[2], string posicion[2], int mejorPuntuacion, string mejorJugador) {
+    if (puntaje[0] > puntaje[1]) {
+        cout << "Ganaste " << posicion[0] << " con " << puntaje[0] << " puntos." << endl;
+        modificarEstadistica(puntaje[0], posicion[0],mejorPuntuacion, mejorJugador);
+        limpiarPantalla();
+    } else if (puntaje[0] < puntaje[1]) {
+        cout << "Ganaste " << posicion[1] << " con " << puntaje[1] << " puntos." << endl;
+        modificarEstadistica(puntaje[1], posicion[1],mejorPuntuacion, mejorJugador);
+        limpiarPantalla();
+    } else {
+        cout << "Empataron, todo mal :(" << endl;
+        limpiarPantalla();
+    }
+}
+
+void imprimirDadoD6(int valor) {
+    const string caras[6] = {
+        // Dado 1
+        "+-------+\n"
+        "|       |\n"
+        "|   o   |\n"
+        "|       |\n"
+        "+-------+",
+
+        // Dado 2
+        "+-------+\n"
+        "| o     |\n"
+        "|       |\n"
+        "|     o |\n"
+        "+-------+",
+
+        // Dado 3
+        "+-------+\n"
+        "| o     |\n"
+        "|   o   |\n"
+        "|     o |\n"
+        "+-------+",
+
+        // Dado 4
+        "+-------+\n"
+        "| o   o |\n"
+        "|       |\n"
+        "| o   o |\n"
+        "+-------+",
+
+        // Dado 5
+        "+-------+\n"
+        "| o   o |\n"
+        "|   o   |\n"
+        "| o   o |\n"
+        "+-------+",
+
+        // Dado 6
+        "+-------+\n"
+        "| o   o |\n"
+        "| o   o |\n"
+        "| o   o |\n"
+        "+-------+"
+    };
+
+    cout << caras[valor - 1] << endl;
+}
+
+void imprimirDadoD12(int valor) {
+    const string caras[12] = {
+        // 1
+        "+---------+\n"
+        "|         |\n"
+        "|    o    |\n"
+        "|         |\n"
+        "+---------+",
+
+        // 2
+        "+---------+\n"
+        "| o       |\n"
+        "|         |\n"
+        "|       o |\n"
+        "+---------+",
+
+        // 3
+        "+---------+\n"
+        "| o       |\n"
+        "|    o    |\n"
+        "|       o |\n"
+        "+---------+",
+
+        // 4
+        "+---------+\n"
+        "| o     o |\n"
+        "|         |\n"
+        "| o     o |\n"
+        "+---------+",
+
+        // 5
+        "+---------+\n"
+        "| o     o |\n"
+        "|    o    |\n"
+        "| o     o |\n"
+        "+---------+",
+
+        // 6
+        "+---------+\n"
+        "| o  o  o |\n"
+        "|         |\n"
+        "| o  o  o |\n"
+        "+---------+",
+
+        // 7
+        "+---------+\n"
+        "| o  o  o |\n"
+        "|    o    |\n"
+        "| o  o  o |\n"
+        "+---------+",
+
+        // 8
+        "+---------+\n"
+        "| o  o  o |\n"
+        "| o     o |\n"
+        "| o  o  o |\n"
+        "+---------+",
+
+        // 9
+        "+---------+\n"
+        "| o  o  o |\n"
+        "| o  o  o |\n"
+        "| o  o  o |\n"
+        "+---------+",
+
+        // 10
+        "+---------+\n"
+        "|o o o o o|\n"
+        "|         |\n"
+        "|o o o o o|\n"
+        "+---------+",
+
+        // 11
+        "+---------+\n"
+        "|o o o o o|\n"
+        "|    o    |\n"
+        "|o o o o o|\n"
+        "+---------+",
+
+        // 12
+        "+---------+\n"
+        "|o o o o o|\n"
+        "|o o o o o|\n"
+        "|o o o o o|\n"
+        "+---------+"
+    };
+
+    cout << caras[valor - 1] << endl;
+}
+
+void modificarEstadistica(int puntaje, string posicion, int &mejorPuntuacion, string &mejorJugador) {
+    if (puntaje > mejorPuntuacion) {
+        mejorPuntuacion = puntaje;
+        mejorJugador = posicion;
+    }
+}
+
+void mostrarMejorPuntaje(int mejorPuntuacion, string mejorJugador) {
+    cout << "+--------------------------------------------------------------+" << endl;
+    cout << " Mejor puntuacion actual                                      " << endl;
+    cout << "                                                              " << endl;
+    cout << " Jugador: [" << mejorJugador << "]" << endl;
+    cout << " Puntos : [" << mejorPuntuacion << "]" << endl;
+    cout << "                                                              " << endl;
+    cout << "+--------------------------------------------------------------+" << endl;
+}
 
