@@ -149,8 +149,16 @@ void seleccionDado(int cantDadosD6,int dadosStock[11],int &sumaSeleccionada,int 
     do {
         cout << "Ingresa el numero indicado en \"Dado x\" siendo X el digito que debe ingresar: " << endl;
         //aca el jugador elije la posicion realmente, verifica si esa posicion tiene un 0 o 1 y en base a eso realiza la suma
-        cin >> seleccion;
-        cin.ignore(numeric_limits<streamsize>::max(), '\n'); //esto ignora el buffer para no tener problemas con el limpiar pantalla
+        do {
+			cin >> seleccion;
+            if (cin.fail()) {
+              	cout << "Ingrese un numero indicado en \"Dado x\" siendo X el digito que debe ingresar, cualquier otra opcion no se tomara" << endl;
+              	cin.clear();
+        		cin.ignore(numeric_limits<streamsize>::max(), '\n'); //esto ignora el buffer para no tener problemas con el limpiar pantalla
+            } else {
+               	break;
+            }
+        } while (true);
 
         if (seleccion >= 1 && seleccion <= cantDadosD6) {
             if (dadosDisponibles[seleccion-1]==0) {
