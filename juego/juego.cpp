@@ -22,7 +22,6 @@ void juego(int &mejorPuntuacion, string &mejorJugador) {
     int dadosStock[11];
     int puntaje[2];
 
-
     int opcion;
 
     do{
@@ -82,6 +81,7 @@ void juego(int &mejorPuntuacion, string &mejorJugador) {
                             ronda = 4;
                             break;
                         }
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n'); //esto ignora el buffer para no tener problemas con el limpiar pantalla
                     }
 
                     ronda++;
@@ -107,7 +107,17 @@ void juego(int &mejorPuntuacion, string &mejorJugador) {
                 cout << "Esta seguro que desea abandonar el juego?" << endl;
                 cout << "1 - Si" << endl;
                 cout << "2 - No" << endl;
-				cin >> salir;
+                do {
+					cin >> salir;
+            		if (cin.fail() || (salir != 1 && salir != 2)) {
+              			cout << "Ingrese 1 o 2" << endl;
+              			cin.clear();
+        				cin.ignore(numeric_limits<streamsize>::max(), '\n'); //esto ignora el buffer para no tener problemas con el limpiar pantalla
+            		} else {
+               			break;
+            		}
+       		 	} while (true);
+
 
                 if (salir != 1) {
                   opcion = 5;
